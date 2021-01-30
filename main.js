@@ -34,7 +34,10 @@ try {
         if (line == "") return;
 
         // split the contents by space
-        let [url, name] = line.split(/\s/);
+        //let first_tab = line.indexOf("\t");
+        //let url = line.substring(0, first_tab);
+        //let name = line.substring(first_tab + 1);
+        let [url, name] = line.split('\t');
 
         const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false });
 
@@ -53,7 +56,7 @@ try {
 
         my_dm.on('error', (error, msg) => {
             console.log(error);
-            console.log(msg);
+            console.log(url);
         })
 
         my_dm.on('check_integrity_end', (data) => {
