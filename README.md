@@ -9,7 +9,7 @@ yarn:	`yarn add global https://github.com/daroxs95/potato_dm`
 npm:	`npm install -g https://github.com/daroxs95/potato_dm`
 
 ## How to use
-- Download file from telegram channels/groups that comtains info of file to download(like the `test download` file in this repo).
+- Download file from telegram channels/groups that contains info of file to download(like the `test download` file in this repo).
 
 - ```
   toduseame -f path_to_file -o D:\misdescargas
