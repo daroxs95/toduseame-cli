@@ -16,17 +16,34 @@ const { PotatoDM } = pkg
 const default_download_path = process.env.HOME + '/toduseame'
 
 const options = yargs
-    .usage("Usage: -f <name> -o <output>")
-    .option("f", { alias: "file", describe: "File to download from todus-s3", type: "string", demandOption: true })
+    .usage("Usage: -f <file_name> -o <output> \n\tor\n       -l <download_link> -o <output> -n <name> ")
+    .option("f", { alias: "file", describe: "File to download from todus-s3", type: "string", demandOption: false })
+    .option("l", { alias: "link", describe: "Link to download from todus-s3", type: "string", demandOption: false })
+    .option("n", { alias: "name", describe: "Rename downloaded file to this", type: "string", demandOption: false })
     .option("o", { alias: "output", describe: "Folder path to store downloads from todus-s3", type: "string", demandOption: false, default: default_download_path })
     .argv;
 
-try {
-    // read contents of the file
-    const data = fs.readFileSync(options.file, 'UTF-8');
+if (!options.file && !options.link) {
+    console.log("\nMissing file and link parameter, please specify either `-l` or `-f`  ");
+    return -1;
+};
 
-    // split the contents by new line
-    const download_pieces = data.split(/\r?\n/);
+if (!options.name && options.link) {
+    console.log("\nPlease specify name of download,`-n <name>`");
+    return -1;
+};
+
+try {
+    let download_pieces;
+    if (options.file) {
+        // read contents of the file
+        const data = fs.readFileSync(options.file, 'UTF-8');
+        // split the contents by new line
+        download_pieces = data.split(/\r?\n/);
+    } else if (options.link) {
+        download_pieces = [options.link + "\t" + options.name];
+    }
+
 
     //download each piece
     download_pieces.forEach((line, index) => {
