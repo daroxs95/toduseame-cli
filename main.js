@@ -18,6 +18,20 @@ const path = require('path');
 const default_download_path = process.env.HOME + '/Downloads/toduseame'
 const allowed_hosts = ['s3.todus.cu'];
 const test_internet_endpoint = "https://web.telegram.org/";
+const headers_extra = {
+    //"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    /*"accept-language": "es-ES,es;q=0.9,en;q=0.8",
+    "cache-control": "max-age=0",
+    "sec-ch-ua": "\"Google Chrome\";v=\"87\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"87\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "none",
+    "sec-fetch-user": "?1",
+    "sec-gpc": "1",
+    "upgrade-insecure-requests": "1",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36"*/
+};
 
 const options = yargs
     .usage("Usage: -f <file_name> -o <output> \n\tor\n       -l <download_link> -o <output> -n <name> ")
@@ -75,7 +89,7 @@ function main() {
             //let name = line.substring(first_tab + 1);
             let [url, name] = line.split('\t');
 
-            const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false, allowed_redirect_hosts: allowed_hosts });
+            const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false, allowed_redirect_hosts: allowed_hosts, extra_headers: headers_extra, timeout: 100000 });
 
             my_dm.on('end', (downloaded_url, downloaded_file_path) => {
                 console.log("\ndownloaded: " + downloaded_url + " to: " + downloaded_file_path);
@@ -92,6 +106,11 @@ function main() {
 
             my_dm.on('error', (error, msg) => {
                 console.log(error);
+                console.log(url);
+            })
+
+            my_dm.on('timeout', (msg) => {
+                console.log(msg);
                 console.log(url);
             })
 
@@ -121,7 +140,7 @@ function main() {
                     //if (this.check_integrity) this._check_integrity();
                 }
             }).catch((error) => {
-                //console.log(error);
+                console.log(error);
             }).finally(() => {
                 //console.log('done from main, promise based, finally')
                 //if (this.check_integrity) this._check_integrity();
