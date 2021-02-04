@@ -52,7 +52,7 @@ if (!options.name && options.link) {
     console.log("No name specified, downloading as: " + options.name)
 };
 
-let headers = get_headers(test_internet_endpoint, [])
+let headers = get_headers(test_internet_endpoint, [], 10000)
     .then(() => {
         main();
     }, () => {
