@@ -87,7 +87,10 @@ function main() {
             //let first_tab = line.indexOf("\t");
             //let url = line.substring(0, first_tab);
             //let name = line.substring(first_tab + 1);
+
+            //let [url, name] = line.split('  ');
             let [url, name] = line.split('\t');
+
 
             const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false, allowed_redirect_hosts: allowed_hosts, extra_headers: headers_extra, timeout: 100000 });
 
