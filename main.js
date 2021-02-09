@@ -39,8 +39,11 @@ const options = yargs
     .option("B", { alias: "BYPASS", describe: "Ignores bug warnings and tries to download", type: "boolean", demandOption: false })
     .option("l", { alias: "link", describe: "Link to download from todus-s3", type: "string", demandOption: false })
     .option("n", { alias: "name", describe: "Rename downloaded file to this", type: "string", demandOption: false })
+    .option("j", { alias: "instances", describe: "Max number of downloads to carry", type: "number", demandOption: false, default: 4 })
     .option("o", { alias: "output", describe: "Folder path to store downloads from todus-s3", type: "string", demandOption: false, default: default_download_path })
     .argv;
+
+const max_downloads = options.instances;
 
 if (!options.file && !options.link) {
     console.log("\nMissing file and link parameter, please specify either `-l` or `-f`  ");
@@ -78,62 +81,68 @@ function main() {
         }
 
 
-        //download each piece
+        /**download each piece
         download_pieces.forEach((line, index) => {
-            //avoid empty lines
-            if (line == "") return;
+            download_piece(line, index);
+        });**/
+        for (let index = 0; index < max_downloads; index++) {
+            download_instance(download_pieces);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+};
 
-            // split the contents by space
-            //let first_tab = line.indexOf("\t");
-            //let url = line.substring(0, first_tab);
-            //let name = line.substring(first_tab + 1);
+//download each piece
+const download_piece = (line, index) => { //index here is for manipulating console.log
+    //avoid empty lines
+    if (line == "") return;
+    // split the contents by space
+    //let first_tab = line.indexOf("\t");
+    //let url = line.substring(0, first_tab);
+    //let name = line.substring(first_tab + 1);
+    //let [url, name] = line.split('  ');
+    let [url, name] = line.split('\t');
+    const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false, allowed_redirect_hosts: allowed_hosts, extra_headers: headers_extra, timeout: 100000 });
+    my_dm.on('end', (downloaded_url, downloaded_file_path) => {
+        console.log("\ndownloaded: " + downloaded_url + " to: " + downloaded_file_path);
+    });
+    my_dm.on('data_chunk', (progress) => {
+        process.stdout.write('\r');
+        for (let i = 0; i < index; i++) {
+            //process.stdout.write('\n');
+        }
+        process.stdout.write('Progress:' + progress + '%');
+    })
+    my_dm.on('error', (error, msg) => {
+        console.log(error);
+        console.log(url);
+    })
+    my_dm.on('timeout', (msg) => {
+        console.log(msg);
+        console.log(url);
+    })
+    my_dm.on('warning', (warning, msg) => {
+        console.log(warning);
+    })
+    my_dm.on('check_integrity_end', (data) => {
+        data.pass ? console.log('file is correct') : console.log("incorrect file, please redownload a fresh version");
+    })
+    my_dm.on('already_exists_resuming', (msg) => {
+        console.log(msg);
+    })
+    my_dm.on('already_exists_restanting', (msg) => {
+        console.log(msg);
+    })
 
-            //let [url, name] = line.split('  ');
-            let [url, name] = line.split('\t');
+    return my_dm;
+};
 
-
-            const my_dm = new PotatoDM(url, options.output + "/" + name.split('.')[0], { file_name: name, check_integrity: false, allowed_redirect_hosts: allowed_hosts, extra_headers: headers_extra, timeout: 100000 });
-
-            my_dm.on('end', (downloaded_url, downloaded_file_path) => {
-                console.log("\ndownloaded: " + downloaded_url + " to: " + downloaded_file_path);
-            });
-
-            my_dm.on('data_chunk', (progress) => {
-                process.stdout.write('\r');
-                for (let i = 0; i < index; i++) {
-                    //process.stdout.write('\n');
-                }
-                process.stdout.write('Progress:' + progress + '%');
-            })
-
-
-            my_dm.on('error', (error, msg) => {
-                console.log(error);
-                console.log(url);
-            })
-
-            my_dm.on('timeout', (msg) => {
-                console.log(msg);
-                console.log(url);
-            })
-
-            my_dm.on('warning', (warning, msg) => {
-                console.log(warning);
-            })
-
-            my_dm.on('check_integrity_end', (data) => {
-                data.pass ? console.log('file is correct') : console.log("incorrect file, please redownload a fresh version");
-            })
-
-            my_dm.on('already_exists_resuming', (msg) => {
-                console.log(msg);
-            })
-
-            my_dm.on('already_exists_restanting', (msg) => {
-                console.log(msg);
-            })
-
-            my_dm._try_download().then({
+//index here is for manipulating console.log
+const download_instance = (download_pieces, index = 0) => {
+    if (download_pieces.length > 0) {
+        try {
+            download_piece(download_pieces.shift(), index)._try_download().then({
                 onfulfilled: () => {
                     //console.log('done from main, promise based, fulfilled')
                     //if (this.check_integrity) this._check_integrity();
@@ -145,11 +154,10 @@ function main() {
             }).catch((error) => {
                 console.log(error);
             }).finally(() => {
-                //console.log('done from main, promise based, finally')
-                //if (this.check_integrity) this._check_integrity();
+                download_instance(download_pieces, index = 0);
             });
-        });
-    } catch (err) {
-        console.error(err);
+        } catch (err) {
+            download_instance(download_pieces, index = 0);
+        }
     }
 };
