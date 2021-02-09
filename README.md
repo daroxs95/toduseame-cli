@@ -21,7 +21,7 @@ The `-o` parameter is not necessary, by default it creates a folder `toduseame` 
 toduseame -l https://s3.todus.cu/.../somestring -n name.ext
 ```
 
-The `-n` parameter is not necessary, but recommended by default it gets the name of file from the url and downloads it to `Downloads/toduseame/somestring/somestring` .
+The `-n` parameter is not necessary, but recommended, by default it gets the name of file from the url and downloads it to `Downloads/toduseame/somestring/somestring` .
 
 ### Context menu
 For windows, execute(add to registry) `context_menu.reg`(the file is inside this repo), now you can try to download any file("txt" file containing links and names lists), by right clicking file + click on `Toduseame here`, this will download to the very same folder you are working on.
