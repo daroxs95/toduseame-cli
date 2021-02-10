@@ -4,9 +4,9 @@ Command line app/interface for handle downloads from s3.todus.cu supporting paus
 
 ## Install
 
-yarn:	`yarn add global https://github.com/daroxs95/potato_dm`
+yarn:	`yarn add global https://github.com/daroxs95/toduseame-cli`
 
-npm:	`npm install -g https://github.com/daroxs95/potato_dm`
+npm:	`npm install -g https://github.com/daroxs95/toduseame-cli`
 
 ## How to use (Examples)
 ### From file containing links and names list (txt file)
